@@ -2,7 +2,8 @@
   "title": "에어 코리아 (swallow77 개선판)",
   "config": {
     "abort": {
-      "already_configured": "장치가 이미 구성되었습니다."
+      "already_configured": "장치가 이미 구성되었습니다.",
+      "pending_data_missing": "동기화 대기 등록 정보가 없어 설정을 다시 시작해야 합니다."
     },
     "error": {
       "invalid_auth": "인증키가 올바르지 않습니다.",
@@ -26,6 +27,10 @@
           "station_name": "측정소 이름"
         },
         "description": "[에어코리아 API 활용신청·상태 확인](https://www.data.go.kr/tcs/dss/selectApiDataDetailView.do?publicDataPk=15073861) · [최신 OpenAPI 신청 가이드](https://www.data.go.kr/cmm/cmm/fileDownload.do?atchFileId=FILE_000000003666340&fileDetailSn=1) · [측정소 검색](https://www.airkorea.or.kr/web/realSearch)\n\n일반 인증키(Encoding 또는 Decoding)와 측정소 이름으로 설정을 갱신하세요. 공식 신청 가이드에 따르면 개발계정은 즉시 승인되지만 실제 API 시스템 동기화에는 1~2시간이 소요될 수 있습니다."
+      },
+      "activation_pending": {
+        "title": "공공데이터포털 동기화 대기",
+        "description": "공공데이터포털이 아직 이 키를 에어코리아 API에 등록된 것으로 응답하지 않았습니다(오류 30). 공식 가이드에 따르면 승인 후 시스템 동기화에 1~2시간이 걸릴 수 있습니다. **제출**을 누르면 통합을 지금 등록하고 Home Assistant가 활성화될 때까지 자동으로 다시 시도합니다."
       }
     }
   }

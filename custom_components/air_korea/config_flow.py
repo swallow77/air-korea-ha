@@ -65,6 +65,20 @@ async def async_validate_auth(api: AirKoreaAPI) -> dict[str, Any]:
 class AirKoreaConfigFlow(ConfigFlow, domain=DOMAIN):
     """설정 흐름 클래스 정의"""
     VERSION = 1
+    _pending_user_input: dict[str, Any] | None = None
+
+    async def _async_create_user_entry(
+            self, user_input: dict[str, Any]
+    ) -> ConfigFlowResult:
+        """고유 측정소 ID를 설정하고 구성 항목을 생성합니다."""
+        station_name = user_input[CONF_STATION_NAME].strip()
+        user_input[CONF_STATION_NAME] = station_name
+        hex_station_name = binascii.hexlify(station_name.encode()).decode()
+        await self.async_set_unique_id(f"{DOMAIN}_{hex_station_name}")
+        self._abort_if_unique_id_configured()
+        return self.async_create_entry(
+            title=f"{TITLE} - {station_name}", data=user_input
+        )
 
     async def async_step_user(
             self, user_input: dict[str, Any] | None = None
@@ -81,15 +95,31 @@ class AirKoreaConfigFlow(ConfigFlow, domain=DOMAIN):
         api = AirKoreaAPI(self.hass, api_key, station_name)
 
         if errors := await async_validate_auth(api):
+            if errors.get("base") == "service_key_not_registered":
+                self._pending_user_input = dict(user_input)
+                return await self.async_step_activation_pending()
             return self.async_show_form(
                 step_id="user",
                 data_schema=STEP_USER_DATA_SCHEMA,
                 errors=errors,
             )
-        hex_station_name = binascii.hexlify(station_name.encode()).decode()
-        await self.async_set_unique_id(f"{DOMAIN}_{hex_station_name}")
-        self._abort_if_unique_id_configured()
-        return self.async_create_entry(title=f"{TITLE} - {station_name}", data=user_input)
+        return await self._async_create_user_entry(user_input)
+
+    async def async_step_activation_pending(
+            self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """포털 동기화 대기 중인 키를 자동 재시도 상태로 등록합니다."""
+        if self._pending_user_input is None:
+            return self.async_abort(reason="pending_data_missing")
+
+        if user_input is None:
+            return self.async_show_form(
+                step_id="activation_pending",
+                data_schema=vol.Schema({}),
+                last_step=True,
+            )
+
+        return await self._async_create_user_entry(self._pending_user_input)
 
     async def async_step_reconfigure(
             self, user_input: dict[str, Any] | None = None
