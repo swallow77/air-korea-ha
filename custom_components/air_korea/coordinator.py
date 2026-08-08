@@ -2,9 +2,10 @@ import binascii
 import json
 import logging
 from typing import Any
-from urllib.parse import unquote
+from urllib.parse import quote, unquote, urlencode
 
 import aiohttp
+from yarl import URL
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -51,6 +52,26 @@ class AirKoreaAPI:
             normalized = normalized[1:-1].strip()
         return unquote(normalized)
 
+    def _request_url(self) -> URL:
+        """기술문서대로 서비스키가 URL Encode된 요청 URL을 만듭니다."""
+        endpoint = (
+            f"{AIR_KOREA_API_URL}/ArpltnInforInqireSvc/"
+            "getMsrstnAcctoRltmMesureDnsty"
+        )
+        service_key = quote(self._api_key, safe="")
+        query = urlencode(
+            {
+                "pageNo": "1",
+                "numOfRows": "1",
+                "ver": "1.3",
+                "dataTerm": "daily",
+                "stationName": self._station_name,
+                "returnType": "json",
+            },
+            quote_via=quote,
+        )
+        return URL(f"{endpoint}?serviceKey={service_key}&{query}", encoded=True)
+
     @staticmethod
     def _api_error(payload: dict[str, Any]) -> tuple[str, str | None]:
         """공공데이터포털의 HTTP/논리 오류 메시지를 추출합니다."""
@@ -71,20 +92,11 @@ class AirKoreaAPI:
 
     async def async_get(self) -> dict[str, Any]:
         """API 정보 업데이트를 위한 업데이트 함수"""
-        url = f"{AIR_KOREA_API_URL}/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty"
+        url = self._request_url()
         try:
             timeout = aiohttp.ClientTimeout(total=15)
             async with self._session.get(
                 url,
-                params={
-                    'pageNo': '1',
-                    'numOfRows': '1',
-                    'ver': '1.3',
-                    'dataTerm': 'daily',
-                    'serviceKey': self._api_key,
-                    'stationName': self._station_name,
-                    'returnType': 'json',
-                },
                 timeout=timeout,
             ) as response:
                 status = response.status
