@@ -20,6 +20,20 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 )
 
 
+def _schema(defaults: dict[str, Any] | None = None) -> vol.Schema:
+    """기존 설정값을 포함한 입력 스키마를 반환합니다."""
+    defaults = defaults or {}
+    return vol.Schema(
+        {
+            vol.Required(CONF_API_KEY, default=defaults.get(CONF_API_KEY, "")): str,
+            vol.Required(
+                CONF_STATION_NAME,
+                default=defaults.get(CONF_STATION_NAME, ""),
+            ): str,
+        }
+    )
+
+
 # API 인증을 검증하는 비동기 함수
 async def async_validate_auth(api: AirKoreaAPI) -> dict[str, Any]:
     """사용자 입력을 검증하여 연결할 수 있는지 확인합니다.
@@ -45,7 +59,7 @@ class AirKoreaConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is None:
             return self.async_show_form(
-                step_id="user", data_schema=STEP_USER_DATA_SCHEMA
+                step_id="user", data_schema=_schema()
             )
 
         api_key = user_input[CONF_API_KEY]
@@ -62,3 +76,33 @@ class AirKoreaConfigFlow(ConfigFlow, domain=DOMAIN):
         await self.async_set_unique_id(f"{DOMAIN}_{hex_station_name}")
         self._abort_if_unique_id_configured()
         return self.async_create_entry(title=f"{TITLE} - {station_name}", data=user_input)
+
+    async def async_step_reconfigure(
+            self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """승인된 공공데이터포털 키 또는 측정소로 기존 항목을 갱신합니다."""
+        entry = self._get_reconfigure_entry()
+
+        if user_input is None:
+            return self.async_show_form(
+                step_id="reconfigure",
+                data_schema=_schema(dict(entry.data)),
+            )
+
+        api = AirKoreaAPI(
+            self.hass,
+            user_input[CONF_API_KEY],
+            user_input[CONF_STATION_NAME],
+        )
+        if errors := await async_validate_auth(api):
+            return self.async_show_form(
+                step_id="reconfigure",
+                data_schema=_schema(user_input),
+                errors=errors,
+            )
+
+        return self.async_update_reload_and_abort(
+            entry,
+            title=f"{TITLE} - {user_input[CONF_STATION_NAME]}",
+            data=user_input,
+        )
