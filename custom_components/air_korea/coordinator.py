@@ -2,6 +2,7 @@ import binascii
 import json
 import logging
 from typing import Any
+from urllib.parse import unquote
 
 import aiohttp
 
@@ -35,8 +36,20 @@ class AirKoreaAPI:
     def __init__(self, hass: HomeAssistant, api_key: str, station_name: str):
         """에어 코리아 API 초기화"""
         self._session = async_get_clientsession(hass)
-        self._api_key = api_key
-        self._station_name = station_name
+        self._api_key = self._normalize_api_key(api_key)
+        self._station_name = station_name.strip()
+
+    @staticmethod
+    def _normalize_api_key(api_key: str) -> str:
+        """포털의 Encoding/Decoding 키와 복사 시 붙은 따옴표를 정규화합니다."""
+        normalized = api_key.strip()
+        if (
+            len(normalized) >= 2
+            and normalized[0] == normalized[-1]
+            and normalized[0] in {"'", '"'}
+        ):
+            normalized = normalized[1:-1].strip()
+        return unquote(normalized)
 
     @staticmethod
     def _api_error(payload: dict[str, Any]) -> tuple[str, str | None]:

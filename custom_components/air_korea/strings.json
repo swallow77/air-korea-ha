@@ -6,7 +6,7 @@
     },
     "error": {
       "invalid_auth": "인증키가 올바르지 않습니다.",
-      "service_key_not_registered": "공공데이터포털에 등록되지 않은 서비스키입니다(오류 30). 새 키 발급 직후라면 활성화된 뒤 다시 시도하세요.",
+      "service_key_not_registered": "공공데이터포털이 이 에어코리아 API 요청에 대해 서비스키를 등록된 것으로 확인하지 못했습니다(오류 30). 키 자체가 정상이라면 아래 활용신청 링크에서 해당 키의 신청·승인 상태를 확인하세요.",
       "service_access_denied": "이 인증키에는 에어코리아 API 이용 권한이 없습니다(오류 20). 공공데이터포털의 활용신청·승인 상태를 확인하세요.",
       "station_not_found": "측정소 데이터를 찾을 수 없습니다. 측정소 이름을 확인하세요.",
       "cannot_connect": "에어코리아 API에 연결할 수 없습니다.",
@@ -18,14 +18,14 @@
           "api_key": "API 키",
           "station_name": "측정소 이름"
         },
-        "description": "공공데이터포털의 일반 인증키(Decoding)와 에어코리아 측정소 이름을 입력하세요."
+        "description": "[에어코리아 API 활용신청·상태 확인](https://www.data.go.kr/tcs/dss/selectApiDataDetailView.do?publicDataPk=15073861) · [측정소 검색](https://www.airkorea.or.kr/web/realSearch)\n\n일반 인증키(Encoding 또는 Decoding)와 측정소 이름을 입력하세요."
       },
       "reconfigure": {
         "data": {
           "api_key": "API 키",
           "station_name": "측정소 이름"
         },
-        "description": "승인된 일반 인증키(Decoding)와 측정소 이름으로 설정을 갱신하세요."
+        "description": "[에어코리아 API 활용신청·상태 확인](https://www.data.go.kr/tcs/dss/selectApiDataDetailView.do?publicDataPk=15073861) · [측정소 검색](https://www.airkorea.or.kr/web/realSearch)\n\n일반 인증키(Encoding 또는 Decoding)와 측정소 이름으로 설정을 갱신하세요."
       }
     }
   }
