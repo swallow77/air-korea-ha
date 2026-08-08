@@ -7,7 +7,12 @@ import voluptuous as vol
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_API_KEY
 from .const import DOMAIN, TITLE, CONF_STATION_NAME
-from .coordinator import AirKoreaAPI, AirKoreaError
+from .coordinator import (
+    AirKoreaAPI,
+    AirKoreaAuthError,
+    AirKoreaError,
+    AirKoreaStationError,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -43,8 +48,17 @@ async def async_validate_auth(api: AirKoreaAPI) -> dict[str, Any]:
     errors = {}
     try:
         await api.async_get()
+    except AirKoreaAuthError as err:
+        if err.code == "30":
+            errors["base"] = "service_key_not_registered"
+        elif err.code == "20":
+            errors["base"] = "service_access_denied"
+        else:
+            errors["base"] = "invalid_auth"
+    except AirKoreaStationError:
+        errors["base"] = "station_not_found"
     except AirKoreaError:
-        errors["base"] = "invalid_auth"
+        errors["base"] = "cannot_connect"
     return errors
 
 

@@ -20,6 +20,14 @@ class AirKoreaError(Exception):
 class AirKoreaAuthError(AirKoreaError):
     """공공데이터포털 서비스키 인증 실패"""
 
+    def __init__(self, message: str, code: str | None = None):
+        super().__init__(message)
+        self.code = code
+
+
+class AirKoreaStationError(AirKoreaError):
+    """측정소 이름 또는 데이터 조회 실패"""
+
 
 class AirKoreaAPI:
     """에어 코리아 API"""
@@ -78,21 +86,27 @@ class AirKoreaAPI:
                 message, code = self._api_error(response_data)
                 _LOGGER.warning("AirKorea API request failed (HTTP %s, code %s): %s", status, code, message)
                 if code in {"20", "21", "22", "30", "31", "32"}:
-                    raise AirKoreaAuthError(f"공공데이터포털 서비스키 오류 ({code}): {message}")
+                    raise AirKoreaAuthError(
+                        f"공공데이터포털 서비스키 오류 ({code}): {message}", code
+                    )
                 raise AirKoreaError(f"HTTP {status}: {message}")
 
             message, code = self._api_error(response_data)
             if code and code != "00":
                 _LOGGER.warning("AirKorea API returned an error (code %s): %s", code, message)
                 if code in {"20", "21", "22", "30", "31", "32"}:
-                    raise AirKoreaAuthError(f"공공데이터포털 서비스키 오류 ({code}): {message}")
+                    raise AirKoreaAuthError(
+                        f"공공데이터포털 서비스키 오류 ({code}): {message}", code
+                    )
                 raise AirKoreaError(f"API 오류 ({code}): {message}")
 
             items = response_data.get("response", {}).get("body", {}).get("items") or []
             if isinstance(items, dict):
                 items = [items]
             if not items:
-                raise AirKoreaError("측정소 데이터를 찾을 수 없습니다. 측정소 이름을 확인하세요.")
+                raise AirKoreaStationError(
+                    "측정소 데이터를 찾을 수 없습니다. 측정소 이름을 확인하세요."
+                )
             return items[0]
         except AirKoreaError:
             raise

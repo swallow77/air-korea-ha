@@ -3,7 +3,7 @@ from datetime import timedelta
 from homeassistant.const import Platform
 
 DOMAIN = "air_korea"
-TITLE = "에어 코리아"
+TITLE = "에어 코리아 (swallow77 개선판)"
 MODEL = "Air Korea"
 
 CONF_STATION_NAME = "station_name"

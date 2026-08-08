@@ -1,12 +1,12 @@
 {
   "domain": "air_korea",
-  "name": "에어 코리아",
-  "codeowners": ["@stkang90"],
+  "name": "에어 코리아 (swallow77 개선판)",
+  "codeowners": ["@swallow77"],
   "config_flow": true,
-  "documentation": "https://github.com/stkang/ha-component-air-korea",
+  "documentation": "https://github.com/swallow77/air-korea-ha",
   "dependencies": [],
   "requirements": [],
   "iot_class": "cloud_polling",
-  "version": "1.1.1",
-  "issue_tracker": "https://github.com/stkang/ha-component-air-korea/issues"
+  "version": "1.1.2",
+  "issue_tracker": "https://github.com/swallow77/air-korea-ha/issues"
 }
